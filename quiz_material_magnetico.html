@@ -1,0 +1,467 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Quiz: ¿Qué material magnético eres?</title>
+
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    width: 100%;
+  }
+  body {
+    background: radial-gradient(circle at top, #ffe3ef 0%, #f9cfe0 42%, #f6b7d2 100%);
+    margin: 0;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .quiz-wrap {
+    width: min(620px, 100%);
+    margin: 0 auto;
+    padding: 1rem;
+    font-family: var(--font-sans);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .quiz-panel,
+  .result-card {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+  .quiz-panel {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(127, 119, 221, 0.14);
+    border-radius: 24px;
+    padding: 1.25rem;
+    box-shadow: 0 18px 60px rgba(33, 29, 82, 0.08);
+    backdrop-filter: blur(10px);
+  }
+  .progress-bar {
+    height: 6px;
+    background: rgba(127, 119, 221, 0.12);
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #7F77DD, #534AB7); border-radius: 999px; transition: width 0.4s ease; }
+  .question-label { font-size: 12px; color: var(--color-text-tertiary); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.65rem; }
+  .question-text { font-size: clamp(1.05rem, 4vw, 1.15rem); font-weight: 600; color: var(--color-text-primary); margin-bottom: 1.25rem; line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 0.75rem; }
+  .opt-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--color-border-secondary);
+    border-radius: 18px;
+    padding: 0.95rem 1rem;
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  }
+  .opt-btn:hover { background: var(--color-background-secondary); border-color: var(--color-border-primary); transform: translateY(-1px); }
+  .opt-btn.selected { background: #EEEDFE; border-color: #7F77DD; color: #3C3489; box-shadow: 0 12px 28px rgba(127, 119, 221, 0.16); }
+  .nav { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-top: 1.25rem; }
+  .nav-btn {
+    background: transparent;
+    border: 1px solid var(--color-border-secondary);
+    border-radius: 14px;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background 0.16s ease, transform 0.16s ease, border-color 0.16s ease;
+  }
+  .nav-btn:hover { background: var(--color-background-secondary); transform: translateY(-1px); }
+  .nav-btn.primary { background: linear-gradient(135deg, #534AB7, #7F77DD); border-color: transparent; color: #fff; box-shadow: 0 10px 24px rgba(83, 74, 183, 0.22); }
+  .nav-btn.primary:hover { background: linear-gradient(135deg, #453e9b, #6259cc); }
+  .step-count { font-size: 13px; color: var(--color-text-tertiary); white-space: nowrap; }
+  .result-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.82));
+    border: 1px solid rgba(127, 119, 221, 0.16);
+    border-radius: 26px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 18px 60px rgba(33, 29, 82, 0.08);
+  }
+  #quiz-screen,
+  #result-screen {
+    width: 100%;
+  }
+  .result-hero {
+    border-radius: 22px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--result-bg, #EEEDFE);
+    display: grid;
+    gap: 0.9rem;
+    justify-items: center;
+    text-align: center;
+  }
+  .result-image {
+    width: min(100%, 260px);
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+  }
+  .result-icon { font-size: 44px; text-align: center; margin-bottom: 0.3rem; }
+  .result-title { font-size: 1.35rem; font-weight: 700; color: var(--color-text-primary); margin-bottom: 0.35rem; text-align: center; }
+  .result-subtitle { font-size: 14px; color: var(--color-text-secondary); text-align: center; margin-bottom: 0; }
+  .result-desc { font-size: 15px; color: var(--color-text-secondary); line-height: 1.72; }
+  .traits { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
+  .trait { background: var(--color-background-secondary); border-radius: 16px; padding: 0.75rem 0.8rem; font-size: 13px; color: var(--color-text-secondary); }
+  .trait strong { display: block; font-weight: 600; color: var(--color-text-primary); font-size: 12px; margin-bottom: 2px; }
+  .restart-btn {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--color-border-secondary);
+    border-radius: 14px;
+    padding: 0.8rem;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    margin-top: 0.9rem;
+  }
+  .restart-btn:hover { background: var(--color-background-secondary); }
+  .badge { display: inline-block; font-size: 11px; padding: 4px 10px; border-radius: 999px; font-weight: 600; margin-bottom: 0; }
+
+  @media (max-width: 640px) {
+    .quiz-wrap {
+      padding: 0.5rem;
+      min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      display: flex;
+      align-items: flex-start;
+    }
+    .quiz-panel {
+      width: 100%;
+      padding: 0.9rem;
+      border-radius: 18px;
+    }
+    .progress-bar { margin-bottom: 1.15rem; }
+    .question-label { margin-bottom: 0.5rem; }
+    .question-text { margin-bottom: 1rem; }
+    .opt-btn { padding: 0.9rem 0.9rem; font-size: 14px; border-radius: 15px; }
+    .nav { flex-direction: column; align-items: stretch; }
+    .nav-btn { width: 100%; }
+    .step-count { order: 2; width: 100%; text-align: center; padding: 0.15rem 0; }
+    .traits { grid-template-columns: 1fr; }
+    .result-card { padding: 0.75rem; border-radius: 20px; }
+    .result-hero { padding: 0.8rem; border-radius: 16px; gap: 0.7rem; }
+    .result-image { width: min(100%, 200px); border-radius: 16px; }
+    .result-icon { font-size: 38px; }
+    .result-title { font-size: 1.15rem; }
+    .result-desc { font-size: 14px; line-height: 1.65; }
+    .trait { padding: 0.7rem 0.75rem; }
+    .restart-btn { padding: 0.75rem; }
+  }
+
+  @media (max-width: 420px) {
+    .quiz-wrap { padding: 0.35rem; }
+    .quiz-panel { padding: 0.8rem; border-radius: 16px; }
+    .question-text { font-size: 1rem; }
+    .opt-btn { font-size: 13.5px; padding: 0.85rem 0.8rem; }
+    .nav-btn { font-size: 13px; padding: 0.72rem 0.9rem; }
+    .result-image { width: min(100%, 180px); }
+    .result-title { font-size: 1.08rem; }
+    .badge { font-size: 10px; padding: 3px 9px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="quiz-wrap">
+  <h2 class="sr-only">Quiz: &iquest;Qu&eacute; material magn&eacute;tico eres?</h2>
+  <div id="quiz-screen" class="quiz-panel">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="question-label" id="q-label">Pregunta 1 de 8</div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div class="nav">
+      <button class="nav-btn" id="back-btn" onclick="goBack()">&larr; Atr&aacute;s</button>
+      <span class="step-count" id="step-count"></span>
+      <button class="nav-btn primary" id="next-btn" onclick="goNext()">Siguiente &rarr;</button>
+    </div>
+  </div>
+  <div id="result-screen" style="display:none;"></div>
+</div>
+
+<script>
+document.documentElement.lang = 'es';
+document.title = 'Quiz: \u00bfQu\u00e9 material magn\u00e9tico eres?';
+document.querySelector('.sr-only').textContent = 'Quiz: ¿Qué material magnético eres?';
+
+const questions = [
+  {
+    text: "Cuando alguien cercano est&aacute; triste, &iquest;c&oacute;mo reaccionas?",
+    options: [
+      { text: "Me afecta profundamente y no puedo evitar sentir lo mismo", scores: { ferro: 3, ferri: 1 } },
+      { text: "Lo noto, pero mantengo mi estado emocional propio", scores: { para: 2, antife: 1 } },
+      { text: "Tiendo a alejarme un poco para preservar mi energ&iacute;a", scores: { dia: 3 } },
+      { text: "Lo apoyo, pero desde mi propio equilibrio", scores: { ferri: 3, para: 1 } }
+    ]
+  },
+  {
+    text: "&iquest;C&oacute;mo describes tu relaci&oacute;n con las tendencias y modas?",
+    options: [
+      { text: "Me entrego por completo, me apasionan", scores: { ferro: 3 } },
+      { text: "Las sigo un poco, pero no del todo", scores: { para: 3, ferri: 1 } },
+      { text: "Las evito activamente, prefiero ir en contra", scores: { dia: 3 } },
+      { text: "Me intereso, pero siempre con matices propios", scores: { ferri: 2, antife: 2 } }
+    ]
+  },
+  {
+    text: "En un grupo, &iquest;qu&eacute; papel sueles tomar?",
+    options: [
+      { text: "L&iacute;der natural, todos me siguen", scores: { ferro: 3 } },
+      { text: "Colaborador que se adapta al ambiente", scores: { para: 3 } },
+      { text: "Independiente, prefiero mi propio camino", scores: { dia: 3 } },
+      { text: "Mediador, busco el equilibrio entre fuerzas opuestas", scores: { ferri: 3 } }
+    ]
+  },
+  {
+    text: "&iquest;Qu&eacute; pasa con tu energ&iacute;a cuando est&aacute;s en una fiesta muy animada?",
+    options: [
+      { text: "Me enciendo, me contagio completamente", scores: { ferro: 3 } },
+      { text: "Me animo un poco, pero luego vuelvo a mi estado normal", scores: { para: 3 } },
+      { text: "Me agoto, prefiero espacios tranquilos", scores: { dia: 2, antife: 1 } },
+      { text: "Me mantengo activo pero estable, disfruto a mi ritmo", scores: { ferri: 2, antife: 2 } }
+    ]
+  },
+  {
+    text: "Cuando tomas una decisi&oacute;n importante, &iquest;qu&eacute; te mueve?",
+    options: [
+      { text: "La pasi&oacute;n y el impulso del momento", scores: { ferro: 3 } },
+      { text: "El contexto y lo que se espera de m&iacute;", scores: { para: 2, ferri: 1 } },
+      { text: "Mi criterio propio, opuesto a lo convencional", scores: { dia: 3 } },
+      { text: "Un equilibrio entre mis valores y el entorno", scores: { ferri: 3 } }
+    ]
+  },
+  {
+    text: "&iquest;C&oacute;mo mantienes tus amistades a lo largo del tiempo?",
+    options: [
+      { text: "Con mucha intensidad, son parte esencial de mi vida", scores: { ferro: 3 } },
+      { text: "De forma natural, voy y vengo seg&uacute;n el contexto", scores: { para: 3 } },
+      { text: "Prefiero pocas relaciones y mucho espacio personal", scores: { dia: 3 } },
+      { text: "Con v&iacute;nculos opuestos: los complementarios me atraen m&aacute;s", scores: { antife: 3, ferri: 1 } }
+    ]
+  },
+  {
+    text: "Si te alejas de tu rutina habitual, &iquest;qu&eacute; ocurre?",
+    options: [
+      { text: "Conservo mis h&aacute;bitos incluso sin el est&iacute;mulo original", scores: { ferro: 3 } },
+      { text: "Vuelvo r&aacute;pidamente a mi estado natural", scores: { para: 3, dia: 1 } },
+      { text: "Me cuesta mucho cambiar, necesito fuerza externa", scores: { antife: 3 } },
+      { text: "Me adapto, pero con mi toque particular", scores: { ferri: 2, para: 1 } }
+    ]
+  },
+  {
+    text: "&iquest;C&oacute;mo describir&iacute;as tu actitud ante el cambio social o pol&iacute;tico?",
+    options: [
+      { text: "Me apasiono, me movilizo, me uno a las corrientes", scores: { ferro: 3 } },
+      { text: "Lo sigo con inter&eacute;s, pero sin comprometerme del todo", scores: { para: 3 } },
+      { text: "Prefiero no implicarme, el conflicto no va conmigo", scores: { dia: 2, antife: 1 } },
+      { text: "Me involucro intentando compensar fuerzas opuestas", scores: { ferri: 2, antife: 2 } }
+    ]
+  }
+];
+
+const results = {
+  ferro: {
+    name: "Ferromagn&eacute;tico",
+    icon: "🧲",
+    color: "#534AB7",
+    bg: "#EEEDFE",
+    image: "img/Ferromagn%C3%A9ticos.png",
+    subtitle: "Intenso, apasionado y con memoria de todo",
+    desc: "Eres el material m&aacute;s poderoso del grupo. Te magnetizas con facilidad y, una vez que algo te apasiona, mantienes esa energ&iacute;a incluso cuando la fuente desaparece. Tienes una fuerte personalidad y una gran capacidad de influir en los dem&aacute;s. Tu entusiasmo es contagioso y tu lealtad, duradera.",
+    traits: [
+      { label: "Intensidad", val: "Muy alta" },
+      { label: "Memoria emocional", val: "Duradera" },
+      { label: "Influencia social", val: "Fuerte" },
+      { label: "Ejemplos f&iacute;sicos", val: "Hierro, cobalto, n&iacute;quel" }
+    ]
+  },
+  dia: {
+    name: "Diamagn&eacute;tico",
+    icon: "🫧",
+    color: "#185FA5",
+    bg: "#E6F1FB",
+    image: "img/diamagneticos.png",
+    subtitle: "Independiente, neutro y autosuficiente",
+    desc: "Tienes una personalidad serena y aut&oacute;noma. Cuando el entorno intenta arrastrarte, t&uacute; te mantienes firme en tu posici&oacute;n, o incluso te apartas. No sigues las corrientes sociales con facilidad y prefieres tu propio espacio. Eres equilibrado y muy dif&iacute;cil de manipular.",
+    traits: [
+      { label: "Autonom&iacute;a", val: "Muy alta" },
+      { label: "Susceptibilidad externa", val: "Muy baja" },
+      { label: "Reacci&oacute;n al entorno", val: "Se aleja" },
+      { label: "Ejemplos f&iacute;sicos", val: "Agua, cobre, oro" }
+    ]
+  },
+  para: {
+    name: "Paramagn&eacute;tico",
+    icon: "🌊",
+    color: "#0F6E56",
+    bg: "#E1F5EE",
+    image: "img/Paramagn%C3%A9ticos.png",
+    subtitle: "Adaptable, presente y sin apegos",
+    desc: "Eres una persona flexible y de mente abierta. Te sientes influenciado por el entorno cuando est&aacute;s en &eacute;l, pero una vez que te alejas, vuelves a tu estado natural sin resentimientos. Vives el momento, te adaptas bien a los cambios y no te aferras a ninguna postura fija.",
+    traits: [
+      { label: "Adaptabilidad", val: "Alta" },
+      { label: "Persistencia", val: "Baja" },
+      { label: "Estado natural", val: "Neutro" },
+      { label: "Ejemplos f&iacute;sicos", val: "Aluminio, platino, ox&iacute;geno" }
+    ]
+  },
+  ferri: {
+    name: "Ferrimagn&eacute;tico",
+    icon: "⚖️",
+    color: "#3B6D11",
+    bg: "#EAF3DE",
+    image: "img/Ferrimagn%C3%A9ticos.png",
+    subtitle: "Equilibrado, complejo y lleno de matices",
+    desc: "Eres una persona con una rica vida interior. Dentro de ti coexisten fuerzas opuestas que no se anulan del todo, sino que crean un equilibrio din&aacute;mico. Eres intenso como el ferromagn&eacute;tico, pero con una complejidad interna que te hace &uacute;nico. Sabes navegar entre contrarios.",
+    traits: [
+      { label: "Complejidad interna", val: "Alta" },
+      { label: "Magnetismo neto", val: "Moderado" },
+      { label: "Tolerancia a opuestos", val: "Alta" },
+      { label: "Ejemplos f&iacute;sicos", val: "Magnetita, ferritas" }
+    ]
+  },
+  antife: {
+    name: "Antiferromagn&eacute;tico",
+    icon: "🔄",
+    color: "#993C1D",
+    bg: "#FAECE7",
+    image: "img/Antiferromagn%C3%A9ticos.png",
+    subtitle: "Estructurado, compensado y silencioso",
+    desc: "Eres una persona profundamente organizada internamente. Tus fuerzas opuestas se cancelan perfectamente, lo que te da una apariencia neutral, pero por dentro hay una estructura muy precisa. Eres estable, dif&iacute;cil de alterar y prefieres que el equilibrio interno sea perfecto, aunque nadie lo vea.",
+    traits: [
+      { label: "Orden interno", val: "Muy alto" },
+      { label: "Magnetismo externo", val: "Nulo" },
+      { label: "Estabilidad", val: "Alta" },
+      { label: "Ejemplos f&iacute;sicos", val: "Manganeso, cromo, FeO" }
+    ]
+  }
+};
+
+let current = 0;
+let answers = new Array(questions.length).fill(null);
+
+function render() {
+  const q = questions[current];
+  const total = questions.length;
+  document.getElementById('progress').style.width = ((current / total) * 100) + '%';
+  document.getElementById('q-label').textContent = `Pregunta ${current + 1} de ${total}`;
+  document.getElementById('q-text').innerHTML = q.text;
+  document.getElementById('step-count').textContent = `${current + 1} / ${total}`;
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  q.options.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn' + (answers[current] === i ? ' selected' : '');
+    btn.innerHTML = o.text;
+    btn.onclick = () => selectOption(i);
+    opts.appendChild(btn);
+  });
+
+  document.getElementById('back-btn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('next-btn').textContent = current === total - 1 ? 'Ver resultado ✦' : 'Siguiente →';
+}
+
+function selectOption(i) {
+  answers[current] = i;
+  document.querySelectorAll('.opt-btn').forEach((b, idx) => {
+    b.className = 'opt-btn' + (idx === i ? ' selected' : '');
+  });
+}
+
+function goNext() {
+  if (answers[current] === null) {
+    document.querySelectorAll('.opt-btn').forEach(b => {
+      b.style.borderColor = '#E24B4A';
+      setTimeout(() => b.style.borderColor = '', 600);
+    });
+    return;
+  }
+  if (current < questions.length - 1) {
+    current++;
+    render();
+  } else {
+    showResult();
+  }
+}
+
+function goBack() {
+  if (current > 0) { current--; render(); }
+}
+
+function showResult() {
+  const scores = { ferro: 0, dia: 0, para: 0, ferri: 0, antife: 0 };
+  answers.forEach((ans, qi) => {
+    if (ans !== null) {
+      const s = questions[qi].options[ans].scores;
+      for (const k in s) scores[k] += s[k];
+    }
+  });
+  const winner = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+  const r = results[winner];
+
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+  rs.className = 'quiz-panel';
+  rs.innerHTML = `
+    <div class="result-card">
+      <div class="result-hero" style="--result-bg:${r.bg};">
+        <img class="result-image" src="${r.image}" alt="${r.name}" loading="lazy">
+        <div style="text-align:center;">
+          <span class="badge" style="background:${r.bg};color:${r.color};">Tu resultado</span>
+        </div>
+        <div class="result-icon">${r.icon}</div>
+        <div class="result-title" style="color:${r.color};">${r.name}</div>
+        <div class="result-subtitle">${r.subtitle}</div>
+      </div>
+      <div class="result-desc">${r.desc}</div>
+      <div class="traits">
+        ${r.traits.map(t => `<div class="trait"><strong>${t.label}</strong>${t.val}</div>`).join('')}
+      </div>
+    </div>
+    <button class="restart-btn" onclick="restart()">↺ Volver a hacer el quiz</button>
+  `;
+}
+
+function restart() {
+  current = 0;
+  answers = new Array(questions.length).fill(null);
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
